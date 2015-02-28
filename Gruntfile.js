@@ -92,6 +92,11 @@ module.exports = function (grunt) {
                 'tests/index.html'
             ]
         },
+        'qunit-tap': {
+            all: {
+                outputConsole: true
+            }
+        },
 
         jsvalidate: {
             files: ['crafty.js', 'tests/**/*.js']
@@ -111,6 +116,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-qunit');
+    grunt.loadNpmTasks('grunt-qunit-tap');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-jsvalidate');
@@ -136,12 +142,12 @@ module.exports = function (grunt) {
     grunt.registerTask('default', ['build:dev', 'jsvalidate']);
 
     // Run the test suite
-    grunt.registerTask('check', ['build:dev', 'jsvalidate', 'qunit', 'jshint']);
+    grunt.registerTask('check', ['build:dev', 'jsvalidate', 'qunit-tap:all', 'jshint']);
 
     // Make crafty.js ready for release - minified version
     grunt.registerTask('release', ['version', 'build:release', 'uglify', 'api']);
 
     // Run only tests
-    grunt.registerTask('validate', ['qunit']);
+    grunt.registerTask('validate', ['qunit-tap:all']);
 
 };
