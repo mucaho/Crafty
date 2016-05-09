@@ -68,15 +68,9 @@ Crafty.c("Renderable", {
         _visible: {enumerable:false}
     },
 
-    _defineRenderableProperites: function () {
-        for (var prop in this._graphics_property_definitions){
-            Object.defineProperty(this, prop, this._graphics_property_definitions[prop]);
-        }
-    },
-
     init: function () {
         // create setters and getters that associate properties such as alpha/_alpha
-        this._defineRenderableProperites();
+        Object.defineProperty(this, this._graphics_property_definitions);
     },
 
     // Renderable assumes that a draw layer has 3 important methods: attach, detach, and dirty
