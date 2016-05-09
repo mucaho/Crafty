@@ -24,6 +24,9 @@
 *.npmignore     text
 *.jshintrc      text
 *.jshintignore  text
+*.eslintrc.json text
+*.eslintignore  text
+
 
 # misc
 *.md            text

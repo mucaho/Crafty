@@ -1,0 +1,40 @@
+{
+  "extends": "eslint:recommended",
+  "root": true,
+  "parserOptions": {
+    "ecmaVersion": 5,
+    "ecmaFeatures": {
+      "jsx": true,
+      "impliedStrict": true
+    }
+  },
+  "plugins": [
+    "react"
+  ],
+  "env": {
+    //"shared-node-browser": true
+    "browser": true,
+    "node": true,
+    "qunit": true
+  },
+  "globals": {
+    "Crafty": false,
+    "browser": false,
+    "signalBarrier": false,
+    "waitBarrier": false,
+    "Round": false,
+    "resetStage": false,
+    "createTouchEvent": false
+  },
+  "rules": {
+    /*
+    "indent": [
+        "error",
+        4
+    ],
+    */
+    "no-unused-vars": ["error", { "vars": "all", "args": "none" }],
+    "linebreak-style": ["error", "unix"],
+    "semi": ["error", "always"]
+  }
+}
