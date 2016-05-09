@@ -17,6 +17,7 @@ module.exports = function() {
     requireNew('./core/systems');
     requireNew('./core/version');
 
+    requireNew('./spatial/scene-graph');
     requireNew('./spatial/2d');
     requireNew('./spatial/collision');
     requireNew('./spatial/spatial-grid');

@@ -24,8 +24,12 @@ var M = Math,
  * @trigger Invalidate - when the entity needs to be redrawn
  * @trigger Rotate - when the entity is rotated - { cos:Number, sin:Number, deg:Number, rad:Number, o: {x:Number, y:Number}}
  * @trigger Reorder - when the entity's z index has changed
+ *
+ * @see SceneGraph
  */
 Crafty.c("2D", {
+    required: "SceneGraph",
+
     /**@
      * #.x
      * @comp 2D
@@ -117,8 +121,6 @@ Crafty.c("2D", {
     _origin: null,
     _mbr: null,
     _entry: null,
-    _children: null,
-    _parent: null,
 
     // Setup all the properties that we need to define
     _2D_property_definitions: {
@@ -208,9 +210,7 @@ Crafty.c("2D", {
         this._by1 = 0;
         this._by2 = 0;
 
-        this._children = [];
 
-        
         // create setters and getters that associate properties such as x/_x
         Object.defineProperties(this, this._2D_property_definitions);
 
@@ -223,7 +223,7 @@ Crafty.c("2D", {
             // Choose the largest bounding region that exists
             var area = this._cbr || this._mbr || this;
             this._entry.update(area);
-            // Move children (if any) by the same amount
+            // TODO Move children (if any) by the same amount
             if (this._children.length > 0) {
                 this._cascade(e);
             }
@@ -233,37 +233,16 @@ Crafty.c("2D", {
             // Choose the largest bounding region that exists
             var old = this._cbr || this._mbr || this;
             this._entry.update(old);
-            // Rotate children (if any) by the same amount
+            // TODO Rotate children (if any) by the same amount
             if (this._children.length > 0) {
                 this._cascade(e);
             }
         });
+    },
 
-        //when object is removed, remove from HashMap and destroy attached children
-        this.bind("Remove", function () {
-            if (this._children) {
-                for (var i = 0; i < this._children.length; i++) {
-                    // delete the child's _parent link, or else the child will splice itself out of
-                    // this._children while destroying itself (which messes up this for-loop iteration).
-                    delete this._children[i]._parent;
-
-                    // Destroy child if possible (It's not always possible, e.g. the polygon attached
-                    // by areaMap has no .destroy(), it will just get garbage-collected.)
-                    if (this._children[i].destroy) {
-                        this._children[i].destroy();
-                    }
-                }
-                this._children = [];
-            }
-
-            if (this._parent) {
-                this._parent.detach(this);
-            }
-
-            Crafty.map.remove(this);
-
-            this.detach();
-        });
+    remove: function() {
+        // remove from HashMap
+        Crafty.map.remove(this);
     },
 
 
@@ -271,7 +250,7 @@ Crafty.c("2D", {
      * #.offsetBoundary
      * @comp 2D
      * Extends the MBR of the entity by a specified amount.
-     * 
+     *
      * @trigger BoundaryOffset - when the MBR offset changes
      * @sign public this .offsetBoundary(Number dx1, Number dy1, Number dx2, Number dy2)
      * @param dx1 - Extends the MBR to the left by this amount
@@ -345,9 +324,9 @@ Crafty.c("2D", {
         }
 
         // If a collision hitbox exists AND sits outside the entity, find a bounding box for both.
-        // `_cbr` contains information about a bounding circle of the hitbox. 
+        // `_cbr` contains information about a bounding circle of the hitbox.
         // The bounds of `_cbr` will be the union of the `_mbr` and the bounding box of that circle.
-        // This will not be a minimal region, but since it's only used for the broad phase pass it's good enough. 
+        // This will not be a minimal region, but since it's only used for the broad phase pass it's good enough.
         //
         // cbr is calculated by the `_checkBounds` method of the "Collision" component
         if (this._cbr) {
@@ -624,6 +603,7 @@ Crafty.c("2D", {
      * internally for ensuring that when a parent moves, the child also
      * moves in the same way.
      */
+     // TODO
     _cascade: function (e) {
         if (!e) return; //no change in position
         var i = 0,
@@ -648,72 +628,6 @@ Crafty.c("2D", {
                 obj.shift(dx, dy, dw, dh);
             }
         }
-    },
-
-    /**@
-     * #.attach
-     * @comp 2D
-     * @sign public this .attach(Entity obj[, .., Entity objN])
-     * @param obj - Child entity(s) to attach
-     *
-     * Sets one or more entities to be children, with the current entity (`this`)
-     * as the parent. When the parent moves or rotates, its children move or
-     * rotate by the same amount. (But not vice-versa: If you move a child, it
-     * will not move the parent.) When the parent is destroyed, its children are
-     * destroyed.
-     *
-     * For any entity, `this._children` is the array of its children entity
-     * objects (if any), and `this._parent` is its parent entity object (if any).
-     *
-     * As many objects as wanted can be attached, and a hierarchy of objects is
-     * possible by attaching.
-     */
-    attach: function () {
-        var i = 0,
-            arg = arguments,
-            l = arguments.length,
-            obj;
-        for (; i < l; ++i) {
-            obj = arg[i];
-            if (obj._parent) {
-                obj._parent.detach(obj);
-            }
-            obj._parent = this;
-            this._children.push(obj);
-        }
-
-        return this;
-    },
-
-    /**@
-     * #.detach
-     * @comp 2D
-     * @sign public this .detach([Entity obj])
-     * @param obj - The entity to detach. Left blank will remove all attached entities
-     *
-     * Stop an entity from following the current entity. Passing no arguments will stop
-     * every entity attached.
-     */
-    detach: function (obj) {
-        var i;
-        //if nothing passed, remove all attached objects
-        if (!obj) {
-            for (i = 0; i < this._children.length; i++) {
-                this._children[i]._parent = null;
-            }
-            this._children = [];
-            return this;
-        }
-
-        //if obj passed, find the handler and unbind
-        for (i = 0; i < this._children.length; i++) {
-            if (this._children[i] === obj) {
-                this._children.splice(i, 1);
-            }
-        }
-        obj._parent = null;
-
-        return this;
     },
 
     /**@
@@ -873,7 +787,7 @@ Crafty.c("Supportable", {
      * #.ground
      * @comp Supportable
      *
-     * Access the ground entity (which may be the actual ground entity if it exists, or `null` if it doesn't exist) and thus whether this entity is currently on the ground or not. 
+     * Access the ground entity (which may be the actual ground entity if it exists, or `null` if it doesn't exist) and thus whether this entity is currently on the ground or not.
      * The ground entity is also available through the events, when the ground entity changes.
      */
     _ground: null,
@@ -885,7 +799,7 @@ Crafty.c("Supportable", {
      * @comp Supportable
      *
      * The canLand boolean determines if the entity is allowed to land or not (e.g. perhaps the entity should not land if it's not falling).
-     * The Supportable component will trigger a "CheckLanding" event. 
+     * The Supportable component will trigger a "CheckLanding" event.
      * Interested parties can listen to this event and prevent the entity from landing by setting `canLand` to false.
      *
      * @example
@@ -921,7 +835,7 @@ Crafty.c("Supportable", {
      * If comp parameter is specified all entities with that component will stop this entity from falling.
      * For a player entity in a platform game this would be a component that is added to all entities
      * that the player should be able to walk on.
-     * 
+     *
      * @example
      * ~~~
      * Crafty.e("2D, DOM, Color, Gravity")
@@ -1103,7 +1017,7 @@ Crafty.c("Gravity", {
     },
 
     _gravityCheckLanding: function(ground) {
-        if (this._dy < 0) 
+        if (this._dy < 0)
             this.canLand = false;
     },
 
@@ -1189,7 +1103,7 @@ Crafty.c("Gravity", {
 
 // This is used to define getters and setters for Motion properties
 // For instance
-//      __motionProp(entity, "a", "x", true) 
+//      __motionProp(entity, "a", "x", true)
 // will define a getter for `ax` which accesses an underlying private property `_ax`
 // If the `setter` property is false, setting a value will be a null-op
 var __motionProp = function(self, prefix, prop, setter) {
@@ -1224,7 +1138,7 @@ var __motionProp = function(self, prefix, prop, setter) {
 
 // This defines an alias for a pair of underlying properties which represent the components of a vector
 // It takes an object with vector methods, and redefines its x/y properties as getters and setters to properties of self
-// This allows you to use the vector's special methods to manipulate the entity's properties, 
+// This allows you to use the vector's special methods to manipulate the entity's properties,
 // while still allowing you to manipulate those properties directly if performance matters
 var __motionVector = function(self, prefix, setter, vector) {
     var publicX = prefix + "x",
@@ -1259,8 +1173,8 @@ Crafty.c("AngularMotion", {
     /**@
      * #.vrotation
      * @comp AngularMotion
-     * 
-     * A property for accessing/modifying the angular(rotational) velocity. 
+     *
+     * A property for accessing/modifying the angular(rotational) velocity.
      * The velocity remains constant over time, unless the acceleration increases the velocity.
      *
      * @example
@@ -1277,8 +1191,8 @@ Crafty.c("AngularMotion", {
     /**@
      * #.arotation
      * @comp AngularMotion
-     * 
-     * A property for accessing/modifying the angular(rotational) acceleration. 
+     *
+     * A property for accessing/modifying the angular(rotational) acceleration.
      * The acceleration increases the velocity over time, resulting in ever increasing speed.
      *
      * @example
@@ -1295,7 +1209,7 @@ Crafty.c("AngularMotion", {
     /**@
      * #.drotation
      * @comp AngularMotion
-     * 
+     *
      * A number that reflects the change in rotation (difference between the old & new rotation) that was applied in the last frame.
      *
      * @example
@@ -1326,7 +1240,7 @@ Crafty.c("AngularMotion", {
      * #.resetAngularMotion
      * @comp AngularMotion
      * @sign public this .resetAngularMotion()
-     * 
+     *
      * Reset all motion (resets velocity, acceleration, motionDelta).
      */
     resetAngularMotion: function() {
@@ -1385,7 +1299,7 @@ Crafty.c("Motion", {
     /**@
      * #.vx
      * @comp Motion
-     * 
+     *
      * A property for accessing/modifying the linear velocity in the x axis.
      * The velocity remains constant over time, unless the acceleration changes the velocity.
      *
@@ -1403,7 +1317,7 @@ Crafty.c("Motion", {
     /**@
      * #.vy
      * @comp Motion
-     * 
+     *
      * A property for accessing/modifying the linear velocity in the y axis.
      * The velocity remains constant over time, unless the acceleration changes the velocity.
      *
@@ -1421,7 +1335,7 @@ Crafty.c("Motion", {
     /**@
      * #.ax
      * @comp Motion
-     * 
+     *
      * A property for accessing/modifying the linear acceleration in the x axis.
      * The acceleration changes the velocity over time.
      *
@@ -1439,7 +1353,7 @@ Crafty.c("Motion", {
     /**@
      * #.ay
      * @comp Motion
-     * 
+     *
      * A property for accessing/modifying the linear acceleration in the y axis.
      * The acceleration changes the velocity over time.
      *
@@ -1457,7 +1371,7 @@ Crafty.c("Motion", {
     /**@
      * #.dx
      * @comp Motion
-     * 
+     *
      * A number that reflects the change in x (difference between the old & new x) that was applied in the last frame.
      *
      * @example
@@ -1472,7 +1386,7 @@ Crafty.c("Motion", {
     /**@
      * #.dy
      * @comp Motion
-     * 
+     *
      * A number that reflects the change in y (difference between the old & new y) that was applied in the last frame.
      *
      * @example
@@ -1511,7 +1425,7 @@ Crafty.c("Motion", {
      * @comp Motion
      * @sign public this .resetMotion()
      * @return this
-     * 
+     *
      * Reset all linear motion (resets velocity, acceleration, motionDelta).
      */
     resetMotion: function() {
@@ -1527,7 +1441,7 @@ Crafty.c("Motion", {
      * @comp Motion
      * @sign public Vector2D .motionDelta()
      * @return A Vector2D with the properties {x, y} that reflect the change in x & y.
-     * 
+     *
      * Returns the difference between the old & new position that was applied in the last frame.
      *
      * @example
@@ -1545,7 +1459,7 @@ Crafty.c("Motion", {
     /**@
      * #.velocity
      * @comp Motion
-     * Method for accessing/modifying the linear(x,y) velocity. 
+     * Method for accessing/modifying the linear(x,y) velocity.
      * The velocity remains constant over time, unless the acceleration increases the velocity.
      *
      * @sign public Vector2D .velocity()
@@ -1572,9 +1486,9 @@ Crafty.c("Motion", {
     /**@
      * #.acceleration
      * @comp Motion
-     * Method for accessing/modifying the linear(x,y) acceleration. 
+     * Method for accessing/modifying the linear(x,y) acceleration.
      * The acceleration increases the velocity over time, resulting in ever increasing speed.
-     * 
+     *
      * @sign public Vector2D .acceleration()
      * @return The acceleration Vector2D with the properties {x, y} that reflects the acceleration in the <x, y> direction of the entity.
      *
@@ -1765,7 +1679,7 @@ Crafty.polygon.prototype = {
      * #.clone
      * @comp Crafty.polygon
      * @sign public void .clone()
-     * 
+     *
      * Returns a clone of the polygon.
      *
      * @example

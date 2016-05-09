@@ -11,6 +11,7 @@ Crafty.c('Tween', require('./core/tween'));
 
 require('./core/systems');
 
+require('./spatial/scene-graph');
 require('./spatial/2d');
 require('./spatial/collision');
 require('./spatial/spatial-grid');

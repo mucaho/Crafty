@@ -11,7 +11,7 @@ Crafty.c("Renderable", {
 
     // Flag for tracking whether the entity is dirty or not
     _changed: false,
-    
+
     /**@
      * #.alpha
      * @comp Renderable
