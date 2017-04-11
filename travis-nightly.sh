@@ -1,5 +1,5 @@
-# If this isn't a PR, and occurs on the develop branch, push crafty.js to craftyjs/Crafty-Distro
-if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "develop" ]; then
+# If this isn't a PR, and occurs on the develop branch, while testing on linux, push crafty.js to craftyjs/Crafty-Distro
+if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "develop" ]; then
   echo -e "Uploading nightly build to craftyjs/Crafty-Distro\n" 
   # Log some git info to the file commit_date
   TZ=UTC git log -n 1 --format=format:"built from commit %h (%cd) of 'develop' branch" --date=local > commit_date
