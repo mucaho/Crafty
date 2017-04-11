@@ -3199,8 +3199,8 @@ querystring@0.2.0:
   resolved "https://registry.yarnpkg.com/querystring/-/querystring-0.2.0.tgz#b209849203bb25df820da756e747005878521620"
 
 qunitjs@^2.3.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/qunitjs/-/qunitjs-2.3.0.tgz#4cfa3efcdb78c801819247ecc00366631979df01"
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/qunitjs/-/qunitjs-2.3.1.tgz#dedf1fc55c2a63c5faa3915c063a980c3facb716"
   dependencies:
     chokidar "1.6.1"
     commander "2.9.0"
@@ -4235,13 +4235,9 @@ window-size@0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/window-size/-/window-size-0.1.0.tgz#5438cd2ea93b202efa3a19fe8887aee7c94f9c9d"
 
-wordwrap@0.0.2:
+wordwrap@0.0.2, wordwrap@~0.0.2:
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/wordwrap/-/wordwrap-0.0.2.tgz#b79669bb42ecb409f83d583cad52ca17eaa1643f"
-
-wordwrap@~0.0.2:
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/wordwrap/-/wordwrap-0.0.3.tgz#a3d5da6cd5c0bc0008d37234bbaf1bed63059107"
 
 wrappy@1:
   version "1.0.2"
