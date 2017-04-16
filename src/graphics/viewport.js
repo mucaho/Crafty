@@ -523,6 +523,66 @@ Crafty.extend({
                 }
             };
         })(),
+
+        /**@
+         * #Crafty.viewport.mousezoom
+         * @comp Crafty.viewport
+         * @kind Method
+         *
+         * @sign public void Crafty.viewport.mousezoom(String mode)
+         * @param String mode - The mode to set viewport mousezooming to
+         *
+         * S
+         * Simply call this function and the user will be able to
+         * drag the viewport around.
+         *
+         * If the user starts a drag, "StopCamera" will be triggered, which will cancel any existing camera animations.
+         */
+        mousezoom: (function () {
+            var active = false,
+                dragging = false,
+                lastMouse = {};
+
+            return function (op, arg) {
+                if (typeof op === 'boolean') {
+                    active = op;
+                    if (active) {
+                        Crafty.mouseObjs++;
+                    } else {
+                        Crafty.mouseObjs = Math.max(0, Crafty.mouseObjs - 1);
+                    }
+                    return;
+                }
+                if (!active) return;
+                switch (op) {
+                case 'move':
+                case 'drag':
+                    if (!dragging) return;
+                    var diff = {
+                        x: arg.clientX - lastMouse.x,
+                        y: arg.clientY - lastMouse.y
+                    };
+
+                    lastMouse.x = arg.clientX;
+                    lastMouse.y = arg.clientY;
+
+                    Crafty.viewport.x += diff.x / this._scale;
+                    Crafty.viewport.y += diff.y / this._scale;
+                    Crafty.viewport._clamp();
+                    break;
+                case 'start':
+                    Crafty.trigger("StopCamera");
+                    lastMouse.x = arg.clientX;
+                    lastMouse.y = arg.clientY;
+                    dragging = true;
+                    break;
+                case 'stop':
+                    dragging = false;
+                    break;
+                }
+            };
+        })(),
+
         _clamp: function () {
             // clamps the viewport to the viewable area
             // under no circumstances should the viewport see something outside the boundary of the 'world'

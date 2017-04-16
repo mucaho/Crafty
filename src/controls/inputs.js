@@ -583,10 +583,14 @@ Crafty.extend({
      *     zoomTowards(1 + evt.direction/10, pos.x, pos.y, 5);
      * });
      * ~~~
+     *
+     * @see Crafty.viewport.mousezoom
      */
     mouseWheelDispatch: function (e) {
         e.direction = (e.detail < 0 || e.wheelDelta > 0 || e.deltaY < 0) ? 1 : -1;
         Crafty.trigger("MouseWheelScroll", e);
+
+        Crafty.viewport.mousezoom('scroll', e);
 
         //Don't prevent default actions if target node is input or textarea.
         if (Crafty.selected && e.target &&
